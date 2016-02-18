@@ -159,6 +159,10 @@ public class IgniteService {
 	public IgniteCache<TransactionKey, Transaction> getNearCache() {
 		return nearCache;
 	}
+	
+	public Ignite getIgnite(){
+		return ignite;
+	}
 
 	/**
 	 * Constructs and returns a fully configured instance of a

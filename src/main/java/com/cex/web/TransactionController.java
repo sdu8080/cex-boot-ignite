@@ -1,8 +1,14 @@
 package com.cex.web;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 
 import org.apache.ignite.cache.CachePeekMode;
+import org.apache.ignite.cluster.ClusterNode;
+import org.apache.ignite.services.ServiceDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +63,7 @@ public class TransactionController{
 		return true;
 	}
 	
-	@RequestMapping(path="cacheSize", method = RequestMethod.GET)
+	@RequestMapping(path="cacheInfo", method = RequestMethod.GET)
 	public  CacheSize getCacheSize(){
 		CacheSize cs = new CacheSize();
 		cs.setNearCacheSize(service.getNearCache().size(CachePeekMode.NEAR));
@@ -67,6 +73,15 @@ public class TransactionController{
 		cs.setOnheapCacheSize(service.getTxnCache().size(CachePeekMode.ONHEAP));
 		cs.setOffheapCacheSize(service.getTxnCache().size(CachePeekMode.OFFHEAP));
 		cs.setSwapCacheSize(service.getTxnCache().size(CachePeekMode.SWAP));
+		Collection<ClusterNode> c = service.getIgnite().cluster().nodes();
+		StringBuffer sb = new StringBuffer();
+		for (Iterator<ClusterNode> iterator = c.iterator(); iterator.hasNext();) {
+			ClusterNode sd = (ClusterNode) iterator.next();
+			sb.append(sd.id()+":"+sd.isClient());
+			sb.append("\n");
+			
+	    }
+		cs.setNodes(sb.toString());
 		return cs;
 	}
 	
@@ -81,7 +96,15 @@ public class TransactionController{
 		private int offheapCacheSize;
 		private int swapCacheSize;
 		
+		private String nodes;
 		
+		
+		public String getNodes() {
+			return nodes;
+		}
+		public void setNodes(String nodes) {
+			this.nodes = nodes;
+		}
 		public int getNearCacheSize() {
 			return nearCacheSize;
 		}
