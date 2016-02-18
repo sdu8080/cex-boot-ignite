@@ -3,12 +3,9 @@ package com.cex.web;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
 
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.services.ServiceDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
