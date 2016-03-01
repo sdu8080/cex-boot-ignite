@@ -74,13 +74,22 @@ public class TransactionController{
 		StringBuffer sb = new StringBuffer();
 		for (Iterator<ClusterNode> iterator = c.iterator(); iterator.hasNext();) {
 			ClusterNode sd = (ClusterNode) iterator.next();
-			sb.append(sd.id()+":"+sd.isClient());
+			if(sd.isClient()){
+				sb.append(sd.id()+":isClient");
+			}else{
+				sb.append(sd.id()+":isServer");
+			}
 			sb.append("\n");
 			
 	    }
 		cs.setNodes(sb.toString());
 		return cs;
 	}
+	
+	
+	
+	
+	
 	
 	@SuppressWarnings("unused")
 	private static class CacheSize {

@@ -1,3 +1,3 @@
 1. Kitematic open the docker cli
 2. run mvn command "mvn clean package docker:build", this will build spring boot docker package
-3. docker run -p 8080:8080 -t cex/cex-boot-ignite
+3. docker run --name cex-boot-ignite -p 8080:8080 -t cex/cex-boot-ignite

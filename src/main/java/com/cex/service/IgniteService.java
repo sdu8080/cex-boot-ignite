@@ -1,5 +1,6 @@
 package com.cex.service;
 
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -42,7 +43,7 @@ public class IgniteService {
 
 	private boolean initialized = false;
 
-	private Ignite ignite = null;
+	private Ignite igniteServer = null;
 
 	private Ignite igniteClient = null;
 
@@ -56,15 +57,18 @@ public class IgniteService {
 					+ ConfigProperties.getProperty(ConfigProperties.configFile));
 
 			try {
-				ignite = Ignition.start(ConfigProperties
+				// start server ignite
+				igniteServer = Ignition.start(ConfigProperties
 						.getProperty(ConfigProperties.configFile));
 
+				// start client ignite
 				IgniteConfiguration ic = new IgniteConfiguration();
 				ic.setClientMode(true);
 				ic.setGridName(CLIENT_GRID);
 				ic.setPeerClassLoadingEnabled(true);
 				igniteClient = Ignition.start(ic);
 
+				// start both caches
 				initTxnCache();
 			} catch (IgniteException e) {
 				e.printStackTrace();
@@ -74,7 +78,7 @@ public class IgniteService {
 
 	}
 
-	public void initTxnCache() {
+	private void initTxnCache() {
 		try {
 
 			String cacheName = ConfigProperties
@@ -93,9 +97,11 @@ public class IgniteService {
 			// partitioned with 1 backup for each partition
 			cfg.setCacheMode(CacheMode.PARTITIONED);
 			cfg.setBackups(1);
+			
+			cfg.setEvictionPolicy(new LruEvictionPolicy<TransactionKey, Transaction>(1000000));
 
 			// create a server partitioned cache
-			cache = ignite.getOrCreateCache(cfg);
+			cache = igniteServer.getOrCreateCache(cfg);
 
 			// create client side near cache before get the server txn cache
 			NearCacheConfiguration<TransactionKey, Transaction> nearCfg = new NearCacheConfiguration<>();
@@ -104,11 +110,21 @@ public class IgniteService {
 			nearCache = igniteClient.getOrCreateNearCache(cacheName, nearCfg);
 
 			logger.info("cache created...");
+			
+			// warm up cache with "ACT" status
+			initialLoad();
 
 		} catch (Exception e) {
 			logger.error("failed to create ignite cache.", e);
 		}
 
+	}
+	
+	private void initialLoad(){
+		
+		cache.loadCache(null, TransactionKey.class, "select * from transaction where card_status='ACT'");
+		
+		logger.info("finish preload...");
 	}
 
 	@PreDestroy
@@ -143,9 +159,9 @@ public class IgniteService {
 			}
 		}
 
-		if (ignite != null) {
+		if (igniteServer != null) {
 			try {
-				ignite.close();
+				igniteServer.close();
 			} catch (IgniteException e) {
 				logger.error("failed to close the ignite instance", e);
 			}
@@ -161,7 +177,7 @@ public class IgniteService {
 	}
 	
 	public Ignite getIgnite(){
-		return ignite;
+		return igniteServer;
 	}
 
 	/**
