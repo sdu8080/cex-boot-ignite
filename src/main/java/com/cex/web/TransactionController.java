@@ -62,7 +62,7 @@ public class TransactionController{
 	public ResponseEntity<String> addTxn(@RequestBody
 			 CardTransaction txn) {
 		
-		logger.info("txn="+txn.toString());
+		logger.debug("txn={}", txn.toString());
 		
 		String cardN = txn.getCardNo();
 		String cardUpc = txn.getCardUpc();

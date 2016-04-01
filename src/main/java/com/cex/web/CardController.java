@@ -55,7 +55,7 @@ public class CardController{
 	public Boolean addCard(@RequestBody
 			 Card card) {
 		
-		logger.info("card="+card.toString());
+		logger.debug("card={}", card.toString());
 		CardKey key = new CardKey(card.getCardNo(), card.getCardUpc());
 		card.setCreateTime(new Timestamp(System.currentTimeMillis()));
 		card.setLastUpdateTime(new Timestamp(System.currentTimeMillis()));

@@ -9,7 +9,7 @@
 		</layout>
 	</appender>
 
-	<logger name="com.cex" level="debug"
+	<logger name="com.cex" level="info"
 		additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>
