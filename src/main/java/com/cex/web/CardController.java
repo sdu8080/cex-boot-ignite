@@ -36,15 +36,17 @@ public class CardController{
 	
 	@RequestMapping(method = RequestMethod.GET) 
 	public Card getCard(
-			@RequestParam(value = "id", required = true) String id) {
-		CardKey key = new CardKey(id);
+			@RequestParam(value = "cardNo", required = true) String cardNo,
+			@RequestParam(value = "cardUpc", required = true) String cardUpc) {
+		CardKey key = new CardKey(cardNo, cardUpc);
 		return cacheRepo.getCardCache().get(key);
 	}
 	
 	@RequestMapping(method = RequestMethod.DELETE) 
 	public Boolean deleteCard(
-			@RequestParam(value = "id", required = true) String id) {
-		CardKey key = new CardKey(id);
+			@RequestParam(value = "cardNo", required = true) String cardNo,
+			@RequestParam(value = "cardUpc", required = true) String cardUpc) {
+		CardKey key = new CardKey(cardNo, cardUpc);
 		return cacheRepo.getCardCache().remove(key);
 	}
 	
@@ -54,8 +56,8 @@ public class CardController{
 			 Card card) {
 		
 		logger.info("card="+card.toString());
-		CardKey key = new CardKey(card.getCardId());
-		card.setCreatedTime(new Timestamp(System.currentTimeMillis()));
+		CardKey key = new CardKey(card.getCardNo(), card.getCardUpc());
+		card.setCreateTime(new Timestamp(System.currentTimeMillis()));
 		card.setLastUpdateTime(new Timestamp(System.currentTimeMillis()));
 		cacheRepo.getCardCache().put(key, card);
 		return true;

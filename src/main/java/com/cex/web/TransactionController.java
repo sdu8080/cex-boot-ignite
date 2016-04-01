@@ -4,18 +4,14 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.cache.Cache.Entry;
-
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CachePeekMode;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.lang.IgniteBiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cex.model.Card;
+import com.cex.model.CardKey;
 import com.cex.model.CardTransaction;
 import com.cex.model.CardTransactionKey;
 import com.cex.service.CacheRepository;
@@ -62,40 +59,25 @@ public class TransactionController{
 	
 	
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}) 
-	public Boolean addTxn(@RequestBody
+	public ResponseEntity<String> addTxn(@RequestBody
 			 CardTransaction txn) {
 		
 		logger.info("txn="+txn.toString());
 		
 		String cardN = txn.getCardNo();
-		IgniteCache<BinaryObject, BinaryObject> cache = cacheRepo.getCardCache().withKeepBinary();
+		String cardUpc = txn.getCardUpc();
+		IgniteCache<CardKey, Card> cache = cacheRepo.getCardCache();
 		
-		
-		
-
-        ScanQuery<BinaryObject, BinaryObject> scan = new ScanQuery<>(
-            new IgniteBiPredicate<BinaryObject, BinaryObject>() {
-                @Override public boolean apply(BinaryObject key, BinaryObject card) {
-                	String cn = card.<String>field("cardNo");
-                    return cardN.equalsIgnoreCase(cn);
-                }
-            }
-        );
-
-		
-		try (QueryCursor<Entry<BinaryObject, BinaryObject>> cursor = cache.query(scan)) {
-			  for (Entry<BinaryObject, BinaryObject> c : cursor){
-				  if(c!=null){
-					  String cardId = c.getValue().field("cardId");
-					  txn.setCardId(cardId);
-				  }
-			  }
+		Card card = cache.get(new CardKey(cardN, cardUpc));
+		if(null == card){
+			logger.info("card {} was not found", cardN);
+			return new ResponseEntity<String>("Card not found.", HttpStatus.BAD_REQUEST);
 		}
 		
 		CardTransactionKey key = new CardTransactionKey(txn.getTransactionId());
 		txn.setTransactionTime(new Timestamp(System.currentTimeMillis()));
 		cacheRepo.getCardTransactionCache().put(key, txn);
-		return true;
+		return new ResponseEntity<String>( HttpStatus.CREATED);
 	}
 	
 	@RequestMapping(path="cacheInfo", method = RequestMethod.GET)
