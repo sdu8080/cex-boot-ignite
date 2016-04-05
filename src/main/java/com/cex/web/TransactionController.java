@@ -3,6 +3,10 @@ package com.cex.web;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
+import net.sf.oval.ConstraintViolation;
+import net.sf.oval.Validator;
 
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.CachePeekMode;
@@ -24,6 +28,8 @@ import com.cex.model.CardTransaction;
 import com.cex.model.CardTransactionKey;
 import com.cex.service.CacheRepository;
 import com.cex.service.IgniteService;
+import com.cex.util.CacheSize;
+import com.cex.util.OvalUtil;
 
 
 /**
@@ -64,6 +70,14 @@ public class TransactionController{
 		
 		logger.debug("txn={}", txn.toString());
 		
+		Validator validator = new Validator();
+		// collect the constraint violations
+		List<ConstraintViolation> violations = validator.validate(txn);
+
+		if(violations !=null && violations.size()>0){
+		  logger.error("Object " + txn + " is invalid.");
+		  return new ResponseEntity<String>(OvalUtil.getViolations(violations), HttpStatus.BAD_REQUEST);
+		}
 		String cardN = txn.getCardNo();
 		String cardUpc = txn.getCardUpc();
 		IgniteCache<CardKey, Card> cache = cacheRepo.getCardCache();
@@ -79,6 +93,7 @@ public class TransactionController{
 		cacheRepo.getCardTransactionCache().put(key, txn);
 		return new ResponseEntity<String>( HttpStatus.CREATED);
 	}
+	
 	
 	@RequestMapping(path="cacheInfo", method = RequestMethod.GET)
 	public  CacheSize getCacheSize(){
@@ -103,77 +118,6 @@ public class TransactionController{
 	    }
 		cs.setNodes(sb.toString());
 		return cs;
-	}
-	
-	
-	
-	
-	
-	
-	@SuppressWarnings("unused")
-	private static class CacheSize {
-		
-		private int nearCacheSize;
-		private int allCacheSize;
-		private int txnCacheSize;
-		private int backupCacheSize;
-		private int onheapCacheSize;
-		private int offheapCacheSize;
-		private int swapCacheSize;
-		
-		private String nodes;
-		
-		
-		public String getNodes() {
-			return nodes;
-		}
-		public void setNodes(String nodes) {
-			this.nodes = nodes;
-		}
-		public int getNearCacheSize() {
-			return nearCacheSize;
-		}
-		public void setNearCacheSize(int nearCacheSize) {
-			this.nearCacheSize = nearCacheSize;
-		}
-		public int getAllCacheSize() {
-			return allCacheSize;
-		}
-		public void setAllCacheSize(int allCacheSize) {
-			this.allCacheSize = allCacheSize;
-		}
-		public int getTxnCacheSize() {
-			return txnCacheSize;
-		}
-		public void setTxnCacheSize(int txnCacheSize) {
-			this.txnCacheSize = txnCacheSize;
-		}
-		public int getBackupCacheSize() {
-			return backupCacheSize;
-		}
-		public void setBackupCacheSize(int backupCacheSize) {
-			this.backupCacheSize = backupCacheSize;
-		}
-		public int getOnheapCacheSize() {
-			return onheapCacheSize;
-		}
-		public void setOnheapCacheSize(int onheapCacheSize) {
-			this.onheapCacheSize = onheapCacheSize;
-		}
-		public int getOffheapCacheSize() {
-			return offheapCacheSize;
-		}
-		public void setOffheapCacheSize(int offheapCacheSize) {
-			this.offheapCacheSize = offheapCacheSize;
-		}
-		public int getSwapCacheSize() {
-			return swapCacheSize;
-		}
-		public void setSwapCacheSize(int swapCacheSize) {
-			this.swapCacheSize = swapCacheSize;
-		}
-		
-		
 	}
 	
 }

@@ -17,7 +17,13 @@
 
 package com.cex.model;
 
-import java.io.*;
+import java.io.Serializable;
+
+import net.sf.oval.constraint.Length;
+import net.sf.oval.constraint.Min;
+import net.sf.oval.constraint.NotEmpty;
+import net.sf.oval.constraint.NotNull;
+import net.sf.oval.constraint.Range;
 
 /**
  * CardTransaction definition.
@@ -29,21 +35,33 @@ public class CardTransaction implements Serializable {
     private static final long serialVersionUID = 0L;
 
     /** Value for transactionId. */
+    @NotNull
+    @NotEmpty
+    @Length(max = 50)
     private String transactionId;
 
     /** Value for cardNo. */
+    @NotNull
+    @NotEmpty
+    @Length(max = 30)
     private String cardNo;
 
     /** Value for cardUpc. */
+    @NotNull
+    @NotEmpty
+    @Length(max = 15)
     private String cardUpc;
 
     /** Value for type. */
+    @Min(100)
     private int type;
 
     /** Value for loadValue. */
+    @Range (min=0, max=1000)
     private Double loadValue;
 
     /** Value for channelId. */
+    @Min(100)
     private Integer channelId;
 
     /** Value for transactionTime. */

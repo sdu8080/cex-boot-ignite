@@ -19,6 +19,12 @@ package com.cex.model;
 
 import java.io.*;
 
+import net.sf.oval.constraint.Length;
+import net.sf.oval.constraint.Min;
+import net.sf.oval.constraint.NotEmpty;
+import net.sf.oval.constraint.NotNull;
+import net.sf.oval.constraint.Range;
+
 /**
  * Card definition.
  *
@@ -29,15 +35,23 @@ public class Card implements Serializable {
     private static final long serialVersionUID = 0L;
 
     /** Value for cardNo. */
+    @NotNull
+    @NotEmpty
+    @Length(max = 30)
     private String cardNo;
 
     /** Value for cardUpc. */
+    @NotNull
+    @NotEmpty
+    @Length(max = 15)
     private String cardUpc;
 
     /** Value for faceValue. */
+    @Range (min=0, max=1000)
     private Double faceValue;
 
     /** Value for maxFaceValue. */
+    @Range (min=0, max=1000)
     private Double maxFaceValue;
 
     /** Value for cardType. */
@@ -53,9 +67,11 @@ public class Card implements Serializable {
     private java.sql.Timestamp lastUpdateTime;
 
     /** Value for assigneddp. */
+    @Min(100)
     private Integer assigneddp;
 
     /** Value for assignedstore. */
+    @Min(100)
     private Integer assignedstore;
 
     /** Value for remark. */
